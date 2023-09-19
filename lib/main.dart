@@ -43,11 +43,11 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         home: const ProductOverviewScreen(),
         routes: {
-          ProductDetailScreen.routeName: (ctx) => ProductDetailScreen(),
+          ProductDetailScreen.routeName: (ctx) => const ProductDetailScreen(),
           CartScreen.routeName: (ctx) => const CartScreen(),
-          OrderScreen.routeName: (ctx) =>  OrderScreen(),
-          UserProductsScreen.routeName:(ctX) => UserProductsScreen(),
-          EditProductScreen.routeName: (ctx) => EditProductScreen(),
+          OrderScreen.routeName: (ctx) =>  const OrderScreen(),
+          UserProductsScreen.routeName:(ctX) => const UserProductsScreen(),
+          EditProductScreen.routeName: (ctx) => const EditProductScreen(),
         },
       ),
     );

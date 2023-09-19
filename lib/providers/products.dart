@@ -1,11 +1,14 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
+
 import 'package:shop_app/providers/product.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class Products with ChangeNotifier {
-  final List<Product> _items = [
-    Product(
+  List<Product> _items = [
+    /* Product(
       id: 'p1',
       title: 'Red Shirt',
       description: 'A red shirt - it is pretty red!',
@@ -36,7 +39,7 @@ class Products with ChangeNotifier {
       price: 49.99,
       imageUrl:
           'https://upload.wikimedia.org/wikipedia/commons/thumb/1/14/Cast-Iron-Pan.jpg/1024px-Cast-Iron-Pan.jpg',
-    ),
+    ),*/
   ];
 
   //var _showFavouritesOnly = false;
@@ -60,33 +63,80 @@ class Products with ChangeNotifier {
   // _showFavouritesOnly = false;
   // notifyListeners();
   // }
+  Future<void> fetchAndSetProducts() async {
+    const url =
+        "https://shop-app-2354d-default-rtdb.firebaseio.com/products.json";
+    try {
+      final response = await http.get(Uri(path: url));
+      final extractedData = json.decode(response.body) as Map<String, dynamic>;
+      final List<Product> loadedProducts = [];
+
+      extractedData.forEach((prodId, prodData) {
+        loadedProducts.add(Product(
+          id: prodId,
+          title: prodData["title"],
+          description: prodData["description"],
+          price: prodData["price"],
+          imageUrl: prodData["imageUrl"],
+          isFavourite: prodData["isFavourite"],
+        ));
+      });
+      _items = loadedProducts;
+      notifyListeners();
+      print(json.decode(response.body));
+    } catch (error) {
+      rethrow;
+    }
+  }
 
   Product findById(String id) {
     return _items.firstWhere((prod) => prod.id == id);
   }
 
-  void addProduct(Product product) {
+  Future<void> addProduct(Product product) async {
     const url =
         "https://shop-app-2354d-default-rtdb.firebaseio.com/products.json";
-    http.post(url as Uri, body: json.encode(
-      {
-        "title":product.title,
-        "desciption":product.description,
-        "imageUrl": product.imageUrl,
-        "price": product.price,
-        "isFavourite": product.isFavourite,
+    try {
+      final response = await http.post(Uri(path: url),
+          body: json.encode({
+            "title": product.title,
+            "desciption": product.description,
+            "imageUrl": product.imageUrl,
+            "price": product.price,
+            "isFavourite": product.isFavourite,
+          }));
+      final newProduct = Product(
+          id: DateTime.now().toString(), //json.decode(response.body)["name"],
+          title: product.title,
+          description: product.description,
+          price: product.price,
+          imageUrl: product.imageUrl);
+      _items.add(newProduct);
+      notifyListeners();
+      // _items.insert(0, newProduct); //at th///e start of the list
+      for (var i = 0; i < _items.length; i++) {
+        print(_items[i].title);
       }
-    ));
-    final newProduct = Product(
-        id: DateTime.now().toString(),
-        title: product.title,
-        description: product.description,
-        price: product.price,
-        imageUrl: product.imageUrl);
-    _items.add(newProduct);
-    _items.insert(0, newProduct); //at the start of the list
-    notifyListeners();
+    } catch (error) {
+      print(error);
+      throw error;
+    }
   }
+
+  /*void updateProduct(String id, Product newProduct) {
+     id = id.trim();
+  final prodIndex = _items.indexWhere((prod) => prod.id == id);
+  print("Product ID to update: $id");
+  print("Current products: $_items");
+  
+  if (prodIndex >= 0) {
+    _items[prodIndex] = newProduct;
+    print("Updated products: $_items");
+    notifyListeners();
+  } else {
+    print("Product not found.");
+  }
+}*/
 
   void updateProduct(String id, Product newProduct) {
     final prodIndex = _items.indexWhere((prod) => prod.id == id);
